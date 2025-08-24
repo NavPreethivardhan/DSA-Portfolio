@@ -180,15 +180,16 @@ def generate_progress_bar(percentage):
 
 def generate_streak_display(streak_data, solutions_by_date=None):
     """
-    Render a GitHub-like 4-week heatmap:
+    Render a GitHub-like monthly calendar heatmap as a Markdown table.
+    - Header: '<Month YYYY>'
     - Columns: Mon..Sun
-    - Rows: 4 recent weeks, oldest on top
-    - Cell intensity from solutions per day:
-        0 -> ▢ (none)
-        1 -> 🟩
-        2 -> 🟨
-        3 -> 🟧
-        4+ -> 🟥
+    - Each cell shows day-of-month, color-coded by activity intensity:
+        0 -> #2f3136 (neutral/dark bg)
+        1 -> #39d353 (green)
+        2 -> #f1e05a (yellow)
+        3 -> #fb8c00 (orange)
+        4+-> #dc3545 (red)
+    - Uses HTML <span> to color cell backgrounds for reliable GitHub rendering.
     """
     from datetime import datetime, timedelta
 
@@ -201,59 +202,91 @@ def generate_streak_display(streak_data, solutions_by_date=None):
         for d in streak_data.get("solution_dates", []):
             day_counts[d] = max(1, day_counts.get(d, 0))
 
-    # Helper: map count -> emoji
-    def cell(c):
-        if c <= 0:
-            return "▢"
-        if c == 1:
-            return "🟩"
-        if c == 2:
-            return "🟨"
-        if c == 3:
-            return "🟧"
-        return "🟥"
+    today = datetime.now()
+    month_start = today.replace(day=1)
+    # Next month start to compute last day
+    if month_start.month == 12:
+        next_month_start = month_start.replace(year=month_start.year + 1, month=1)
+    else:
+        next_month_start = month_start.replace(month=month_start.month + 1)
+    month_end = next_month_start - timedelta(days=1)
 
-    # Determine the last Sunday to align columns Mon..Sun visually
-    today = datetime.now().date()
-    # Weekday(): Mon=0..Sun=6. We want the grid to end on Sunday to show a full last row.
-    days_since_sunday = (today.weekday() - 6) % 7
-    last_sunday = today - timedelta(days=days_since_sunday)
+    # Week starts Monday to match GitHub-like grids
+    # Compute how many leading blanks before day 1
+    lead_blanks = (month_start.weekday())  # Mon=0..Sun=6
+    total_days = month_end.day
 
-    # Build a 4-week window ending at last_sunday
-    # Weeks: oldest -> newest (top to bottom)
-    weeks = []
-    start_of_oldest_week = last_sunday - timedelta(days=7*3 + 6)  # 4 weeks total, each 7 days, aligned Mon start
-    # Align the start to Monday for consistent columns
-    start_of_oldest_week -= timedelta(days=(start_of_oldest_week.weekday() % 7))  # push back to Monday
+    # Color scale
+    def color_for(count):
+        if count <= 0:
+            return "#2f3136"  # neutral dark
+        if count == 1:
+            return "#39d353"  # green
+        if count == 2:
+            return "#f1e05a"  # yellow
+        if count == 3:
+            return "#fb8c00"  # orange
+        return "#dc3545"      # red
 
-    for w in range(4):
-        week_start = start_of_oldest_week + timedelta(days=7*w)
-        days = []
-        for i in range(7):
-            d = week_start + timedelta(days=i)
-            ds = d.strftime("%Y-%m-%d")
-            days.append(cell(day_counts.get(ds, 0)))
-        weeks.append(days)
+    # Build calendar grid rows
+    cells = []
+    # Leading blanks
+    for _ in range(lead_blanks):
+        cells.append({"text": "", "bg": "#00000000"})  # transparent
 
-    # Header: weekdays
-    header = "M T W T F S S"
+    # Month days
+    for day in range(1, total_days + 1):
+        d = month_start.replace(day=day)
+        ds = d.strftime("%Y-%m-%d")
+        cnt = day_counts.get(ds, 0)
+        cells.append({"text": str(day), "bg": color_for(cnt)})
 
-    # Join rows with spaces between cells
-    grid = [header] + [" ".join(row) for row in weeks]
-    grid_str = "\n".join(grid)
+    # Pad trailing blanks to complete the last week
+    while len(cells) % 7 != 0:
+        cells.append({"text": "", "bg": "#00000000"})
 
-    legend = "Legend: ▢ None  🟩 1  🟨 2  🟧 3  🟥 4+"
-    direction = "Oldest → Newest"
+    # Assemble table rows (each 7 cells)
+    rows = [cells[i:i+7] for i in range(0, len(cells), 7)]
+
+    # Markdown table header
+    title = today.strftime("%B %Y")
+    header = "Mon | Tue | Wed | Thu | Fri | Sat | Sun"
+    sep = "---|---|---|---|---|---|---"
+
+    # Build each row using HTML spans inside table cells
+    def render_cell(cell):
+        if not cell["text"]:
+            return " "
+        # Rounded pill-like badge
+        return (
+            f'<span style="display:inline-block; min-width:1.6em; text-align:center; '
+            f'padding:2px 6px; border-radius:6px; background:{cell["bg"]}; color:#ffffff;">'
+            f'{cell["text"]}</span>'
+        )
+
+    table_lines = [f"### {title}", "", header, sep]
+    for row in rows:
+        line = " | ".join(render_cell(c) for c in row)
+        table_lines.append(line)
+
+    legend = (
+        "Legend: "
+        '<span style="background:#2f3136;color:#fff;padding:1px 6px;border-radius:6px;">0</span> '
+        '<span style="background:#39d353;color:#000;padding:1px 6px;border-radius:6px;">1</span> '
+        '<span style="background:#f1e05a;color:#000;padding:1px 6px;border-radius:6px;">2</span> '
+        '<span style="background:#fb8c00;color:#000;padding:1px 6px;border-radius:6px;">3</span> '
+        '<span style="background:#dc3545;color:#fff;padding:1px 6px;border-radius:6px;">4+</span>'
+    )
 
     current_streak = streak_data.get("current_streak", 0)
 
     return (
         "## 🔥 Streak & Activity\n"
-        f"**Current Streak:** {current_streak} days\n\n"
-        f"{grid_str}\n"
-        f"{direction}\n\n"
-        f"{legend}"
+        f"**Current Streak:** {current_streak} days\n\n" +
+        "\n".join(table_lines) +
+        "\n\n" + legend
     )
+
 
 
 
