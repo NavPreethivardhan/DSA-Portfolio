@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 scripts/generate_indexes.py
 Scans all Python files in ../solutions/, extracts metadata headers,
@@ -34,11 +33,10 @@ APPROACH_PATTERN = re.compile(r"^Approach:\s*(.+)$", re.MULTILINE)
 
 FILE_LINK_TEMPLATE = "- [{name}]({path})"
 
-
 def load_streak_data():
     """Load streak tracking data from JSON file."""
     if os.path.exists(STREAK_DATA_PATH):
-        with open(STREAK_DATA_PATH, 'r') as f:
+        with open(STREAK_DATA_PATH, 'r', encoding='utf-8') as f:
             return json.load(f)
     return {
         "current_streak": 0,
@@ -46,12 +44,10 @@ def load_streak_data():
         "solution_dates": []
     }
 
-
 def save_streak_data(data):
     """Save streak tracking data to JSON file."""
-    with open(STREAK_DATA_PATH, 'w') as f:
+    with open(STREAK_DATA_PATH, 'w', encoding='utf-8') as f:
         json.dump(data, f, indent=2)
-
 
 def extract_metadata(filepath):
     """Read file and extract metadata fields."""
@@ -78,7 +74,6 @@ def extract_metadata(filepath):
             metadata[key] = match.group(1).strip()
     return metadata
 
-
 def split_topics(topic_field):
     """Split a Topic field into a list."""
     if not topic_field:
@@ -86,11 +81,9 @@ def split_topics(topic_field):
     parts = [t.strip() for t in topic_field.split(",")]
     return [t for t in parts if t]
 
-
 def get_file_creation_date(filepath):
     """Get file creation date as YYYY-MM-DD."""
     return datetime.fromtimestamp(os.path.getctime(filepath)).strftime('%Y-%m-%d')
-
 
 def scan_solutions():
     """Scan solutions directory and gather all relevant data."""
@@ -124,7 +117,6 @@ def scan_solutions():
                 diff_map[metadata['difficulty']].append((display_name, rel_path))
 
     return topic_map, diff_map, solutions_by_date
-
 
 def calculate_progress_stats(solutions_by_date, streak_data):
     """Calculate progress statistics for the current month."""
@@ -171,18 +163,16 @@ def calculate_progress_stats(solutions_by_date, streak_data):
         'current_month': today.strftime('%B %Y')
     }
 
-
 def generate_progress_bar(percentage):
     """Generate a GitHub-style progress bar badge."""
     pct = min(100, max(0, int(percentage)))
     return f"![Progress](https://geps.dev/progress/{pct})"
 
-
 def generate_streak_display(streak_data, solutions_by_date=None):
     """
     Monthly calendar heatmap as a Markdown table using colored squares with hover tooltips.
     - Columns: Mon..Sun
-    - Each cell is a small colored square; hover shows 'YYYY-MM-DD: N solved'
+    - Each cell is a colored square; hover shows 'YYYY-MM-DD: N solved'
     - Intensity palette:
         0 -> #444B55 (neutral)
         1 -> #39d353 (green)
@@ -192,7 +182,7 @@ def generate_streak_display(streak_data, solutions_by_date=None):
     """
     from datetime import datetime, timedelta
 
-    # Collect per-day counts
+    # Gather per-day counts
     day_counts = {}
     if solutions_by_date:
         for d, sols in solutions_by_date.items():
@@ -204,7 +194,7 @@ def generate_streak_display(streak_data, solutions_by_date=None):
     today = datetime.now()
     month_start = today.replace(day=1)
 
-    # Compute month_end
+    # Compute end of month
     if month_start.month == 12:
         next_month_start = month_start.replace(year=month_start.year + 1, month=1)
     else:
@@ -227,7 +217,7 @@ def generate_streak_display(streak_data, solutions_by_date=None):
             return "#fb8c00"
         return "#dc3545"
 
-    # Build cell list (with placeholders)
+    # Build cell list with placeholders
     cells = []
     for _ in range(lead_blanks):
         cells.append({"date": None, "count": 0, "color": None})
@@ -241,15 +231,16 @@ def generate_streak_display(streak_data, solutions_by_date=None):
 
     rows = [cells[i:i+7] for i in range(0, len(cells), 7)]
 
-    # Render: colored square only; use title for hover tooltip
+    # Render a visible square (with trailing &nbsp; to ensure non-empty cell)
     def badge(date_str, count, color):
         if not date_str:
-            return '<span style="display:inline-block;width:12px;height:12px;background:transparent;border-radius:2px;opacity:0.25;"></span>'
+            return ('<span style="display:inline-block;width:14px;height:14px;'
+                    'background:transparent;border:1px solid #3a3f44;'
+                    'border-radius:3px;opacity:0.4;"></span>&nbsp;')
         title = f'{date_str}: {count} solved'
-        return (
-            f'<span title="{title}" '
-            f'style="display:inline-block;width:12px;height:12px;background:{color};border-radius:2px;vertical-align:middle;"></span>'
-        )
+        return (f'<span title="{title}" '
+                f'style="display:inline-block;width:14px;height:14px;'
+                f'background:{color};border-radius:3px;vertical-align:middle;"></span>&nbsp;')
 
     title = today.strftime("%B %Y")
     header = "Mon | Tue | Wed | Thu | Fri | Sat | Sun"
@@ -261,11 +252,11 @@ def generate_streak_display(streak_data, solutions_by_date=None):
 
     legend = (
         "Legend: "
-        '<span style="display:inline-block;width:12px;height:12px;background:#444B55;border-radius:2px;"></span> 0 '
-        '<span style="display:inline-block;width:12px;height:12px;background:#39d353;border-radius:2px;"></span> 1 '
-        '<span style="display:inline-block;width:12px;height:12px;background:#f1e05a;border-radius:2px;"></span> 2 '
-        '<span style="display:inline-block;width:12px;height:12px;background:#fb8c00;border-radius:2px;"></span> 3 '
-        '<span style="display:inline-block;width:12px;height:12px;background:#dc3545;border-radius:2px;"></span> 4+'
+        '<span style="display:inline-block;width:14px;height:14px;background:#444B55;border-radius:3px;"></span> 0 '
+        '<span style="display:inline-block;width:14px;height:14px;background:#39d353;border-radius:3px;"></span> 1 '
+        '<span style="display:inline-block;width:14px;height:14px;background:#f1e05a;border-radius:3px;"></span> 2 '
+        '<span style="display:inline-block;width:14px;height:14px;background:#fb8c00;border-radius:3px;"></span> 3 '
+        '<span style="display:inline-block;width:14px;height:14px;background:#dc3545;border-radius:3px;"></span> 4+'
     )
 
     current_streak = streak_data.get("current_streak", 0)
@@ -276,10 +267,6 @@ def generate_streak_display(streak_data, solutions_by_date=None):
         "\n".join(table_lines) +
         "\n\n" + legend
     )
-
-
-
-
 
 def update_readme(progress_stats, streak_data, solutions_by_date=None):
     """Update README.md with the latest progress and streak info."""
@@ -303,11 +290,13 @@ def update_readme(progress_stats, streak_data, solutions_by_date=None):
     if table_pattern.search(content):
         content = table_pattern.sub(new_table, content)
 
+    # Stronger regex to replace the entire streak block
     streak_section = generate_streak_display(streak_data, solutions_by_date=solutions_by_date)
-    streak_pattern = re.compile(r"## 🔥 Streak & Activity.*?(?=## |$)", re.DOTALL)
+    streak_pattern = re.compile(r"^## 🔥 Streak & Activity.*?(?=^## |\Z)", re.DOTALL | re.MULTILINE)
     if streak_pattern.search(content):
         content = streak_pattern.sub(streak_section + "\n\n", content)
     else:
+        # Insert before Contact if not present
         content = re.sub(
             r"(## 📞 Contact)",
             streak_section + "\n\n---\n\n\\1",
@@ -317,7 +306,6 @@ def update_readme(progress_stats, streak_data, solutions_by_date=None):
 
     with open(README_PATH, 'w', encoding='utf-8') as f:
         f.write(content)
-
 
 def create_or_update_daily_log(solutions_by_date):
     """Create or update today's log in progress/daily_logs."""
@@ -364,7 +352,6 @@ def create_or_update_daily_log(solutions_by_date):
     with open(log_path, 'w', encoding='utf-8') as f:
         f.write(content)
 
-
 def write_index(path, title, mapping):
     """Write a markdown index file given a mapping."""
     with open(path, "w", encoding="utf-8") as f:
@@ -375,7 +362,6 @@ def write_index(path, title, mapping):
             for name, rel_path in sorted(mapping[key]):
                 f.write(f"{FILE_LINK_TEMPLATE.format(name=name, path=rel_path)}\n")
             f.write("\n")
-
 
 def main():
     streak_data = load_streak_data()
@@ -398,7 +384,6 @@ def main():
         f"({progress_stats['success_rate']:.1f}%)"
     )
     print(f"🔥 Current streak: {streak_data['current_streak']} days")
-
 
 if __name__ == "__main__":
     main()
