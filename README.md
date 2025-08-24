@@ -47,9 +47,15 @@
 ---
 
 ## 🔥 Streak & Activity
-**Current Streak:** 0 days  
-**Last 14 days:** ⚫M ⚫T ⚫W ⚫T ⚫F ⚫S ⚫S ⚫M ⚫T ⚫W ⚫T ⚫F ⚫S ⚫S  
-*(🟢 = Solution added, ⚫ = No activity)*
+**Current Streak:** 0 days
+
+⚪ ⚪ ⚪ ⚪ ⚪ ⚪ ⚪
+⚪ ⚪ ⚪ ⚪ ⚪ ⚪ ⚪
+⚪ ⚪ ⚪ ⚪ ⚪ ⚪ ⚪
+🟥 ⚪ ⚪ ⚪ ⚪ ⚪ ⚪
+M   W   F    
+
+Legend: ⚪ None  🟩 1  🟨 2  🟧 3  🟥 4+
 
 ## 📞 Contact
 

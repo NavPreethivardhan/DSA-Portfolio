@@ -178,29 +178,90 @@ def generate_progress_bar(percentage):
     return f"![Progress](https://geps.dev/progress/{pct})"
 
 
-def generate_streak_display(streak_data):
-    """Generate a 14-day streak calendar display."""
-    current_streak = streak_data['current_streak']
-    today = datetime.now()
-    days_display = []
-    for i in range(13, -1, -1):
-        date = today - timedelta(days=i)
-        date_str = date.strftime('%Y-%m-%d')
-        day_abbr = date.strftime('%a')[0]
-        if date_str in streak_data['solution_dates']:
-            days_display.append(f"🟢{day_abbr}")
+def generate_streak_display(streak_data, solutions_by_date=None):
+    """
+    Generate a modern, heatmap-like 28-day streak bar:
+    - 4 rows (weeks) × 7 days each (oldest on top, newest at bottom/right)
+    - Color intensity reflects number of solutions that day:
+        0 -> ⚪ (no activity)
+        1 -> 🟩
+        2 -> 🟨
+        3 -> 🟧
+        4+ -> 🟥
+    - Weekday labels shown once below (M W F markers) for orientation.
+    """
+    from datetime import datetime, timedelta
+
+    # Ensure we have counts per day (prefer solutions_by_date for intensity)
+    # Fallback to binary presence via streak_data['solution_dates'] if needed.
+    day_counts = {}
+    if solutions_by_date:
+        for d, sols in solutions_by_date.items():
+            day_counts[d] = len(sols)
+    else:
+        # Binary fallback using recorded dates
+        for d in streak_data.get("solution_dates", []):
+            day_counts[d] = max(1, day_counts.get(d, 0))
+
+    # Build 28-day window ending today
+    today = datetime.now().date()
+    window = [today - timedelta(days=i) for i in range(27, -1, -1)]  # oldest -> newest
+
+    # Map counts to emoji intensity
+    def cell_emoji(count):
+        if count <= 0:
+            return "⚪"
+        if count == 1:
+            return "🟩"
+        if count == 2:
+            return "🟨"
+        if count == 3:
+            return "🟧"
+        return "🟥"  # 4+
+
+    # Render 4 rows of 7 days
+    rows = []
+    for r in range(4):
+        week = window[r*7:(r+1)*7]
+        parts = []
+        for d in week:
+            ds = d.strftime("%Y-%m-%d")
+            c = day_counts.get(ds, 0)
+            parts.append(cell_emoji(c))
+        rows.append(" ".join(parts))
+
+    # Weekday markers (for the last row orientation only)
+    # Using thin markers under the grid to avoid visual clutter.
+    # Positions correspond to actual day-of-week for the last 7 days row.
+    last_week = window[-7:]
+    dow_labels = []
+    for d in last_week:
+        # Markers for Mon, Wed, Fri; blank otherwise.
+        if d.weekday() in (0, 2, 4):  # Mon=0, Tue=1, ..., Sun=6
+            dow_labels.append({"0":"M","2":"W","4":"F"}[str(d.weekday())])
         else:
-            days_display.append(f"⚫{day_abbr}")
-    days_str = " ".join(days_display)
+            dow_labels.append(" ")
+
+    current_streak = streak_data.get("current_streak", 0)
+
+    legend = (
+        "Legend: ⚪ None  🟩 1  🟨 2  🟧 3  🟥 4+"
+    )
+
+    grid = "\n".join(rows)
+    labels = " ".join(dow_labels)
+
     return (
         "## 🔥 Streak & Activity\n"
-        f"**Current Streak:** {current_streak} days  \n"
-        f"**Last 14 days:** {days_str}  \n"
-        "*(🟢 = Solution added, ⚫ = No activity)*"
+        f"**Current Streak:** {current_streak} days\n\n"
+        f"{grid}\n"
+        f"{labels}\n\n"
+        f"{legend}"
     )
 
 
-def update_readme(progress_stats, streak_data):
+
+def update_readme(progress_stats, streak_data, solutions_by_date=None):
     """Update README.md with the latest progress and streak info."""
     if not os.path.exists(README_PATH):
         return
@@ -222,7 +283,7 @@ def update_readme(progress_stats, streak_data):
     if table_pattern.search(content):
         content = table_pattern.sub(new_table, content)
 
-    streak_section = generate_streak_display(streak_data)
+    streak_section = generate_streak_display(streak_data, solutions_by_date=solutions_by_date)
     streak_pattern = re.compile(r"## 🔥 Streak & Activity.*?(?=## |$)", re.DOTALL)
     if streak_pattern.search(content):
         content = streak_pattern.sub(streak_section + "\n\n", content)
@@ -304,7 +365,7 @@ def main():
     write_index(BY_TOPIC_PATH, "Solutions by Topic", topic_map)
     write_index(BY_DIFF_PATH, "Solutions by Difficulty", diff_map)
 
-    update_readme(progress_stats, streak_data)
+    update_readme(progress_stats, streak_data, solutions_by_date)
     create_or_update_daily_log(solutions_by_date)
     save_streak_data(streak_data)
 
