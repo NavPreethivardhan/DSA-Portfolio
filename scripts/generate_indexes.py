@@ -180,82 +180,78 @@ def generate_progress_bar(percentage):
 
 def generate_streak_display(streak_data, solutions_by_date=None):
     """
-    Generate a modern, heatmap-like 28-day streak bar:
-    - 4 rows (weeks) × 7 days each (oldest on top, newest at bottom/right)
-    - Color intensity reflects number of solutions that day:
-        0 -> ⚪ (no activity)
+    Render a GitHub-like 4-week heatmap:
+    - Columns: Mon..Sun
+    - Rows: 4 recent weeks, oldest on top
+    - Cell intensity from solutions per day:
+        0 -> ▢ (none)
         1 -> 🟩
         2 -> 🟨
         3 -> 🟧
         4+ -> 🟥
-    - Weekday labels shown once below (M W F markers) for orientation.
     """
     from datetime import datetime, timedelta
 
-    # Ensure we have counts per day (prefer solutions_by_date for intensity)
-    # Fallback to binary presence via streak_data['solution_dates'] if needed.
+    # Build counts per YYYY-MM-DD
     day_counts = {}
     if solutions_by_date:
         for d, sols in solutions_by_date.items():
             day_counts[d] = len(sols)
     else:
-        # Binary fallback using recorded dates
         for d in streak_data.get("solution_dates", []):
             day_counts[d] = max(1, day_counts.get(d, 0))
 
-    # Build 28-day window ending today
-    today = datetime.now().date()
-    window = [today - timedelta(days=i) for i in range(27, -1, -1)]  # oldest -> newest
-
-    # Map counts to emoji intensity
-    def cell_emoji(count):
-        if count <= 0:
-            return "⚪"
-        if count == 1:
+    # Helper: map count -> emoji
+    def cell(c):
+        if c <= 0:
+            return "▢"
+        if c == 1:
             return "🟩"
-        if count == 2:
+        if c == 2:
             return "🟨"
-        if count == 3:
+        if c == 3:
             return "🟧"
-        return "🟥"  # 4+
+        return "🟥"
 
-    # Render 4 rows of 7 days
-    rows = []
-    for r in range(4):
-        week = window[r*7:(r+1)*7]
-        parts = []
-        for d in week:
+    # Determine the last Sunday to align columns Mon..Sun visually
+    today = datetime.now().date()
+    # Weekday(): Mon=0..Sun=6. We want the grid to end on Sunday to show a full last row.
+    days_since_sunday = (today.weekday() - 6) % 7
+    last_sunday = today - timedelta(days=days_since_sunday)
+
+    # Build a 4-week window ending at last_sunday
+    # Weeks: oldest -> newest (top to bottom)
+    weeks = []
+    start_of_oldest_week = last_sunday - timedelta(days=7*3 + 6)  # 4 weeks total, each 7 days, aligned Mon start
+    # Align the start to Monday for consistent columns
+    start_of_oldest_week -= timedelta(days=(start_of_oldest_week.weekday() % 7))  # push back to Monday
+
+    for w in range(4):
+        week_start = start_of_oldest_week + timedelta(days=7*w)
+        days = []
+        for i in range(7):
+            d = week_start + timedelta(days=i)
             ds = d.strftime("%Y-%m-%d")
-            c = day_counts.get(ds, 0)
-            parts.append(cell_emoji(c))
-        rows.append(" ".join(parts))
+            days.append(cell(day_counts.get(ds, 0)))
+        weeks.append(days)
 
-    # Weekday markers (for the last row orientation only)
-    # Using thin markers under the grid to avoid visual clutter.
-    # Positions correspond to actual day-of-week for the last 7 days row.
-    last_week = window[-7:]
-    dow_labels = []
-    for d in last_week:
-        # Markers for Mon, Wed, Fri; blank otherwise.
-        if d.weekday() in (0, 2, 4):  # Mon=0, Tue=1, ..., Sun=6
-            dow_labels.append({"0":"M","2":"W","4":"F"}[str(d.weekday())])
-        else:
-            dow_labels.append(" ")
+    # Header: weekdays
+    header = "M T W T F S S"
+
+    # Join rows with spaces between cells
+    grid = [header] + [" ".join(row) for row in weeks]
+    grid_str = "\n".join(grid)
+
+    legend = "Legend: ▢ None  🟩 1  🟨 2  🟧 3  🟥 4+"
+    direction = "Oldest → Newest"
 
     current_streak = streak_data.get("current_streak", 0)
-
-    legend = (
-        "Legend: ⚪ None  🟩 1  🟨 2  🟧 3  🟥 4+"
-    )
-
-    grid = "\n".join(rows)
-    labels = " ".join(dow_labels)
 
     return (
         "## 🔥 Streak & Activity\n"
         f"**Current Streak:** {current_streak} days\n\n"
-        f"{grid}\n"
-        f"{labels}\n\n"
+        f"{grid_str}\n"
+        f"{direction}\n\n"
         f"{legend}"
     )
 
