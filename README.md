@@ -1,6 +1,6 @@
 # DSA Mastery Portfolio
 
-**Goal:** Solve 1,200 LeetCode problems by Feb 2026  
+**Goal:** Solve 1,200 LeetCode problems by Feb 2027  
 **Commitment:** 6 hrs/day, 6 days/week
 
 ---

@@ -240,7 +240,7 @@ def generate_streak_display(streak_data, solutions_by_date=None):
         # use a placeholder for empty cells
         table.append(" | ".join(cell or "⬛" for cell in row))
 
-    legend = "Legend: ⬜ 0   🟩 1   🟨 2   🟧 3   🟥 4+"
+    legend = "Legend: ⬜ 0   🟩 1   🟨 2   🟧 3   🟥 4+ \n Hover to check the Date and number of problems solved each day"
     streak = streak_data.get("current_streak", 0)
 
     return (
