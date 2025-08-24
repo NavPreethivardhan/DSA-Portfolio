@@ -7,11 +7,10 @@
 
 ## 📊 Progress Dashboard
 
-| Period               | Solved | Target | Rate (%) | Avg Time (min) |
-|----------------------|-------:|-------:|---------:|---------------:|
-| Aug 15–31, 2025      |     47 |     80 |    58.8% |             25 |
-| Sep 2025             |      0 |    200 |     0.0% |              – |
-| **Total**            |     47 |     80 |    58.8% |             25 |
+| Period               | Solved | Target | Rate (%) | Progress |
+|----------------------|-------:|-------:|---------:|----------|
+| August 2025          |      9 |    150 |     6.0% | ![Progress](https://geps.dev/progress/6) |
+| **Total**            |      9 |    150 |     6.0% | ![Progress](https://geps.dev/progress/6) |
 
 *Update monthly in `progress/monthly_summaries/`.*
 
@@ -46,6 +45,11 @@
 - **Tracking:** Weights & Biases (optional)   -->
 
 ---
+
+## 🔥 Streak & Activity
+**Current Streak:** 0 days  
+**Last 14 days:** ⚫M ⚫T ⚫W ⚫T ⚫F ⚫S ⚫S ⚫M ⚫T ⚫W ⚫T ⚫F ⚫S ⚫S  
+*(🟢 = Solution added, ⚫ = No activity)*
 
 ## 📞 Contact
 
