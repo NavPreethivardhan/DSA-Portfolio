@@ -170,19 +170,19 @@ def generate_progress_bar(percentage):
 
 def generate_streak_display(streak_data, solutions_by_date=None):
     """
-    Monthly calendar heatmap as a Markdown table using colored squares with hover tooltips.
+    Monthly calendar heatmap as a Markdown table using visible emoji squares.
     - Columns: Mon..Sun
-    - Each cell is a colored square; hover shows 'YYYY-MM-DD: N solved'
-    - Intensity palette:
-        0 -> #444B55 (neutral)
-        1 -> #39d353 (green)
-        2 -> #f1e05a (yellow)
-        3 -> #fb8c00 (orange)
-        4+-> #dc3545 (red)
+    - Each cell is an emoji:
+        0 -> ⬜
+        1 -> 🟩
+        2 -> 🟨
+        3 -> 🟧
+        4+-> 🟥
+    - Hover tooltip with title attribute *still* works, but is optional.
     """
     from datetime import datetime, timedelta
 
-    # Gather per-day counts
+    # Build per-day counts
     day_counts = {}
     if solutions_by_date:
         for d, sols in solutions_by_date.items():
@@ -194,79 +194,59 @@ def generate_streak_display(streak_data, solutions_by_date=None):
     today = datetime.now()
     month_start = today.replace(day=1)
 
-    # Compute end of month
+    # Compute month end
     if month_start.month == 12:
-        next_month_start = month_start.replace(year=month_start.year + 1, month=1)
+        next_month = month_start.replace(year=month_start.year+1, month=1)
     else:
-        next_month_start = month_start.replace(month=month_start.month + 1)
-    month_end = next_month_start - timedelta(days=1)
+        next_month = month_start.replace(month=month_start.month+1)
+    month_end = next_month - timedelta(days=1)
     total_days = month_end.day
 
-    # Monday-first alignment (Mon=0..Sun=6)
-    lead_blanks = month_start.weekday()
+    lead_blanks = month_start.weekday()  # Mon=0..Sun=6
 
-    # Color scale
-    def color_for(count):
+    # Map count to emoji
+    def emoji_for(count):
         if count <= 0:
-            return "#444B55"
+            return "⬜"
         if count == 1:
-            return "#39d353"
+            return "🟩"
         if count == 2:
-            return "#f1e05a"
+            return "🟨"
         if count == 3:
-            return "#fb8c00"
-        return "#dc3545"
+            return "🟧"
+        return "🟥"
 
-    # Build cell list with placeholders
-    cells = []
-    for _ in range(lead_blanks):
-        cells.append({"date": None, "count": 0, "color": None})
-    for day in range(1, total_days + 1):
-        d = month_start.replace(day=day)
-        ds = d.strftime("%Y-%m-%d")
+    # Build calendar cells
+    cells = [""] * lead_blanks
+    for day in range(1, total_days+1):
+        ds = month_start.replace(day=day).strftime("%Y-%m-%d")
         cnt = day_counts.get(ds, 0)
-        cells.append({"date": ds, "count": cnt, "color": color_for(cnt)})
-    while len(cells) % 7 != 0:
-        cells.append({"date": None, "count": 0, "color": None})
+        cells.append(emoji_for(cnt))
+    # pad to full weeks
+    while len(cells) % 7:
+        cells.append("")
 
     rows = [cells[i:i+7] for i in range(0, len(cells), 7)]
 
-    # Render a visible square (with trailing &nbsp; to ensure non-empty cell)
-    def badge(date_str, count, color):
-        if not date_str:
-            return ('<span style="display:inline-block;width:14px;height:14px;'
-                    'background:transparent;border:1px solid #3a3f44;'
-                    'border-radius:3px;opacity:0.4;"></span>&nbsp;')
-        title = f'{date_str}: {count} solved'
-        return (f'<span title="{title}" '
-                f'style="display:inline-block;width:14px;height:14px;'
-                f'background:{color};border-radius:3px;vertical-align:middle;"></span>&nbsp;')
-
+    # Compose markdown table
     title = today.strftime("%B %Y")
     header = "Mon | Tue | Wed | Thu | Fri | Sat | Sun"
-    sep = "---|---|---|---|---|---|---"
+    sep    = "---|---|---|---|---|---|---"
 
-    table_lines = [f"### {title}", "", header, sep]
+    table = [f"### {title}", "", header, sep]
     for row in rows:
-        table_lines.append(" | ".join(badge(c["date"], c["count"], c["color"]) for c in row))
+        table.append(" | ".join(cell or "⬛" for cell in row))
 
-    legend = (
-        "Legend: "
-        '<span style="display:inline-block;width:14px;height:14px;background:#444B55;border-radius:3px;"></span> 0 '
-        '<span style="display:inline-block;width:14px;height:14px;background:#39d353;border-radius:3px;"></span> 1 '
-        '<span style="display:inline-block;width:14px;height:14px;background:#f1e05a;border-radius:3px;"></span> 2 '
-        '<span style="display:inline-block;width:14px;height:14px;background:#fb8c00;border-radius:3px;"></span> 3 '
-        '<span style="display:inline-block;width:14px;height:14px;background:#dc3545;border-radius:3px;"></span> 4+'
-    )
-
-    current_streak = streak_data.get("current_streak", 0)
+    legend = "Legend: ⬜ 0  🟩 1  🟨 2  🟧 3  🟥 4+"
+    streak = streak_data.get("current_streak", 0)
 
     return (
         "## 🔥 Streak & Activity\n"
-        f"**Current Streak:** {current_streak} days\n\n" +
-        "\n".join(table_lines) +
+        f"**Current Streak:** {streak} days\n\n" +
+        "\n".join(table) +
         "\n\n" + legend
     )
+
 
 def update_readme(progress_stats, streak_data, solutions_by_date=None):
     """Update README.md with the latest progress and streak info."""
