@@ -170,15 +170,16 @@ def generate_progress_bar(percentage):
 
 def generate_streak_display(streak_data, solutions_by_date=None):
     """
-    Monthly calendar heatmap as a Markdown table using visible emoji squares.
+    Monthly calendar heatmap as a Markdown table using emoji squares
+    wrapped in spans with hover tooltips.
     - Columns: Mon..Sun
-    - Each cell is an emoji:
+    - Each cell is an emoji inside a <span title="YYYY-MM-DD: N solved">
+    - Intensity mapping:
         0 -> ⬜
         1 -> 🟩
         2 -> 🟨
         3 -> 🟧
         4+-> 🟥
-    - Hover tooltip with title attribute *still* works, but is optional.
     """
     from datetime import datetime, timedelta
 
@@ -196,9 +197,9 @@ def generate_streak_display(streak_data, solutions_by_date=None):
 
     # Compute month end
     if month_start.month == 12:
-        next_month = month_start.replace(year=month_start.year+1, month=1)
+        next_month = month_start.replace(year=month_start.year + 1, month=1)
     else:
-        next_month = month_start.replace(month=month_start.month+1)
+        next_month = month_start.replace(month=month_start.month + 1)
     month_end = next_month - timedelta(days=1)
     total_days = month_end.day
 
@@ -218,15 +219,16 @@ def generate_streak_display(streak_data, solutions_by_date=None):
 
     # Build calendar cells
     cells = [""] * lead_blanks
-    for day in range(1, total_days+1):
+    for day in range(1, total_days + 1):
         ds = month_start.replace(day=day).strftime("%Y-%m-%d")
         cnt = day_counts.get(ds, 0)
-        cells.append(emoji_for(cnt))
-    # pad to full weeks
-    while len(cells) % 7:
-        cells.append("")
+        em = emoji_for(cnt)
+        # wrap in span with tooltip
+        cells.append(f'<span title="{ds}: {cnt} solved">{em}</span>')
+    while len(cells) % 7 != 0:
+        cells.append("")  # trailing blanks
 
-    rows = [cells[i:i+7] for i in range(0, len(cells), 7)]
+    rows = [cells[i:i + 7] for i in range(0, len(cells), 7)]
 
     # Compose markdown table
     title = today.strftime("%B %Y")
@@ -235,17 +237,20 @@ def generate_streak_display(streak_data, solutions_by_date=None):
 
     table = [f"### {title}", "", header, sep]
     for row in rows:
+        # use a placeholder for empty cells
         table.append(" | ".join(cell or "⬛" for cell in row))
 
-    legend = "Legend: ⬜ 0  🟩 1  🟨 2  🟧 3  🟥 4+"
+    legend = "Legend: ⬜ 0   🟩 1   🟨 2   🟧 3   🟥 4+"
     streak = streak_data.get("current_streak", 0)
 
     return (
         "## 🔥 Streak & Activity\n"
-        f"**Current Streak:** {streak} days\n\n" +
-        "\n".join(table) +
-        "\n\n" + legend
+        f"**Current Streak:** {streak} days\n\n"
+        + "\n".join(table)
+        + "\n\n"
+        + legend
     )
+
 
 
 def update_readme(progress_stats, streak_data, solutions_by_date=None):

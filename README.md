@@ -53,13 +53,13 @@
 
 Mon | Tue | Wed | Thu | Fri | Sat | Sun
 ---|---|---|---|---|---|---
-⬛ | ⬛ | ⬛ | ⬛ | ⬜ | ⬜ | ⬜
-⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜
-⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜
-🟥 | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜
-⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜ | ⬜
+⬛ | ⬛ | ⬛ | ⬛ | <span title="2025-08-01: 0 solved">⬜</span> | <span title="2025-08-02: 0 solved">⬜</span> | <span title="2025-08-03: 0 solved">⬜</span>
+<span title="2025-08-04: 0 solved">⬜</span> | <span title="2025-08-05: 0 solved">⬜</span> | <span title="2025-08-06: 0 solved">⬜</span> | <span title="2025-08-07: 0 solved">⬜</span> | <span title="2025-08-08: 0 solved">⬜</span> | <span title="2025-08-09: 0 solved">⬜</span> | <span title="2025-08-10: 0 solved">⬜</span>
+<span title="2025-08-11: 0 solved">⬜</span> | <span title="2025-08-12: 0 solved">⬜</span> | <span title="2025-08-13: 0 solved">⬜</span> | <span title="2025-08-14: 0 solved">⬜</span> | <span title="2025-08-15: 0 solved">⬜</span> | <span title="2025-08-16: 0 solved">⬜</span> | <span title="2025-08-17: 0 solved">⬜</span>
+<span title="2025-08-18: 9 solved">🟥</span> | <span title="2025-08-19: 0 solved">⬜</span> | <span title="2025-08-20: 0 solved">⬜</span> | <span title="2025-08-21: 0 solved">⬜</span> | <span title="2025-08-22: 0 solved">⬜</span> | <span title="2025-08-23: 0 solved">⬜</span> | <span title="2025-08-24: 0 solved">⬜</span>
+<span title="2025-08-25: 0 solved">⬜</span> | <span title="2025-08-26: 0 solved">⬜</span> | <span title="2025-08-27: 0 solved">⬜</span> | <span title="2025-08-28: 0 solved">⬜</span> | <span title="2025-08-29: 0 solved">⬜</span> | <span title="2025-08-30: 0 solved">⬜</span> | <span title="2025-08-31: 0 solved">⬜</span>
 
-Legend: ⬜ 0  🟩 1  🟨 2  🟧 3  🟥 4+
+Legend: ⬜ 0   🟩 1   🟨 2   🟧 3   🟥 4+
 
 ## 📞 Contact
 
