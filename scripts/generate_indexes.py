@@ -180,20 +180,19 @@ def generate_progress_bar(percentage):
 
 def generate_streak_display(streak_data, solutions_by_date=None):
     """
-    Render a GitHub-like monthly calendar heatmap as a Markdown table.
-    - Header: '<Month YYYY>'
+    Monthly calendar heatmap as a Markdown table using colored squares with hover tooltips.
     - Columns: Mon..Sun
-    - Each cell shows day-of-month, color-coded by activity intensity:
-        0 -> #2f3136 (neutral/dark bg)
+    - Each cell is a small colored square; hover shows 'YYYY-MM-DD: N solved'
+    - Intensity palette:
+        0 -> #444B55 (neutral)
         1 -> #39d353 (green)
         2 -> #f1e05a (yellow)
         3 -> #fb8c00 (orange)
         4+-> #dc3545 (red)
-    - Uses HTML <span> to color cell backgrounds for reliable GitHub rendering.
     """
     from datetime import datetime, timedelta
 
-    # Build counts per YYYY-MM-DD
+    # Collect per-day counts
     day_counts = {}
     if solutions_by_date:
         for d, sols in solutions_by_date.items():
@@ -204,78 +203,69 @@ def generate_streak_display(streak_data, solutions_by_date=None):
 
     today = datetime.now()
     month_start = today.replace(day=1)
-    # Next month start to compute last day
+
+    # Compute month_end
     if month_start.month == 12:
         next_month_start = month_start.replace(year=month_start.year + 1, month=1)
     else:
         next_month_start = month_start.replace(month=month_start.month + 1)
     month_end = next_month_start - timedelta(days=1)
-
-    # Week starts Monday to match GitHub-like grids
-    # Compute how many leading blanks before day 1
-    lead_blanks = (month_start.weekday())  # Mon=0..Sun=6
     total_days = month_end.day
+
+    # Monday-first alignment (Mon=0..Sun=6)
+    lead_blanks = month_start.weekday()
 
     # Color scale
     def color_for(count):
         if count <= 0:
-            return "#2f3136"  # neutral dark
+            return "#444B55"
         if count == 1:
-            return "#39d353"  # green
+            return "#39d353"
         if count == 2:
-            return "#f1e05a"  # yellow
+            return "#f1e05a"
         if count == 3:
-            return "#fb8c00"  # orange
-        return "#dc3545"      # red
+            return "#fb8c00"
+        return "#dc3545"
 
-    # Build calendar grid rows
+    # Build cell list (with placeholders)
     cells = []
-    # Leading blanks
     for _ in range(lead_blanks):
-        cells.append({"text": "", "bg": "#00000000"})  # transparent
-
-    # Month days
+        cells.append({"date": None, "count": 0, "color": None})
     for day in range(1, total_days + 1):
         d = month_start.replace(day=day)
         ds = d.strftime("%Y-%m-%d")
         cnt = day_counts.get(ds, 0)
-        cells.append({"text": str(day), "bg": color_for(cnt)})
-
-    # Pad trailing blanks to complete the last week
+        cells.append({"date": ds, "count": cnt, "color": color_for(cnt)})
     while len(cells) % 7 != 0:
-        cells.append({"text": "", "bg": "#00000000"})
+        cells.append({"date": None, "count": 0, "color": None})
 
-    # Assemble table rows (each 7 cells)
     rows = [cells[i:i+7] for i in range(0, len(cells), 7)]
 
-    # Markdown table header
+    # Render: colored square only; use title for hover tooltip
+    def badge(date_str, count, color):
+        if not date_str:
+            return '<span style="display:inline-block;width:12px;height:12px;background:transparent;border-radius:2px;opacity:0.25;"></span>'
+        title = f'{date_str}: {count} solved'
+        return (
+            f'<span title="{title}" '
+            f'style="display:inline-block;width:12px;height:12px;background:{color};border-radius:2px;vertical-align:middle;"></span>'
+        )
+
     title = today.strftime("%B %Y")
     header = "Mon | Tue | Wed | Thu | Fri | Sat | Sun"
     sep = "---|---|---|---|---|---|---"
 
-    # Build each row using HTML spans inside table cells
-    def render_cell(cell):
-        if not cell["text"]:
-            return " "
-        # Rounded pill-like badge
-        return (
-            f'<span style="display:inline-block; min-width:1.6em; text-align:center; '
-            f'padding:2px 6px; border-radius:6px; background:{cell["bg"]}; color:#ffffff;">'
-            f'{cell["text"]}</span>'
-        )
-
     table_lines = [f"### {title}", "", header, sep]
     for row in rows:
-        line = " | ".join(render_cell(c) for c in row)
-        table_lines.append(line)
+        table_lines.append(" | ".join(badge(c["date"], c["count"], c["color"]) for c in row))
 
     legend = (
         "Legend: "
-        '<span style="background:#2f3136;color:#fff;padding:1px 6px;border-radius:6px;">0</span> '
-        '<span style="background:#39d353;color:#000;padding:1px 6px;border-radius:6px;">1</span> '
-        '<span style="background:#f1e05a;color:#000;padding:1px 6px;border-radius:6px;">2</span> '
-        '<span style="background:#fb8c00;color:#000;padding:1px 6px;border-radius:6px;">3</span> '
-        '<span style="background:#dc3545;color:#fff;padding:1px 6px;border-radius:6px;">4+</span>'
+        '<span style="display:inline-block;width:12px;height:12px;background:#444B55;border-radius:2px;"></span> 0 '
+        '<span style="display:inline-block;width:12px;height:12px;background:#39d353;border-radius:2px;"></span> 1 '
+        '<span style="display:inline-block;width:12px;height:12px;background:#f1e05a;border-radius:2px;"></span> 2 '
+        '<span style="display:inline-block;width:12px;height:12px;background:#fb8c00;border-radius:2px;"></span> 3 '
+        '<span style="display:inline-block;width:12px;height:12px;background:#dc3545;border-radius:2px;"></span> 4+'
     )
 
     current_streak = streak_data.get("current_streak", 0)
@@ -286,6 +276,7 @@ def generate_streak_display(streak_data, solutions_by_date=None):
         "\n".join(table_lines) +
         "\n\n" + legend
     )
+
 
 
 
