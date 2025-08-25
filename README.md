@@ -9,8 +9,8 @@
 
 | Period               | Solved | Target | Rate (%) | Progress |
 |----------------------|-------:|-------:|---------:|----------|
-| August 2025          |      9 |    150 |     6.0% | ![Progress](https://geps.dev/progress/6) |
-| **Total**            |      9 |    150 |     6.0% | ![Progress](https://geps.dev/progress/6) |
+| August 2025          |     13 |    150 |     8.7% | ![Progress](https://geps.dev/progress/8) |
+| **Total**            |     13 |    150 |     8.7% | ![Progress](https://geps.dev/progress/8) |
 
 *Update monthly in `progress/monthly_summaries/`.*
 
@@ -47,7 +47,7 @@
 ---
 
 ## 🔥 Streak & Activity
-**Current Streak:** 0 days
+**Current Streak:** 1 days
 
 ### August 2025
 
@@ -57,9 +57,10 @@ Mon | Tue | Wed | Thu | Fri | Sat | Sun
 <span title="2025-08-04: 0 solved">⬜</span> | <span title="2025-08-05: 0 solved">⬜</span> | <span title="2025-08-06: 0 solved">⬜</span> | <span title="2025-08-07: 0 solved">⬜</span> | <span title="2025-08-08: 0 solved">⬜</span> | <span title="2025-08-09: 0 solved">⬜</span> | <span title="2025-08-10: 0 solved">⬜</span>
 <span title="2025-08-11: 0 solved">⬜</span> | <span title="2025-08-12: 0 solved">⬜</span> | <span title="2025-08-13: 0 solved">⬜</span> | <span title="2025-08-14: 0 solved">⬜</span> | <span title="2025-08-15: 0 solved">⬜</span> | <span title="2025-08-16: 0 solved">⬜</span> | <span title="2025-08-17: 0 solved">⬜</span>
 <span title="2025-08-18: 9 solved">🟥</span> | <span title="2025-08-19: 0 solved">⬜</span> | <span title="2025-08-20: 0 solved">⬜</span> | <span title="2025-08-21: 0 solved">⬜</span> | <span title="2025-08-22: 0 solved">⬜</span> | <span title="2025-08-23: 0 solved">⬜</span> | <span title="2025-08-24: 0 solved">⬜</span>
-<span title="2025-08-25: 0 solved">⬜</span> | <span title="2025-08-26: 0 solved">⬜</span> | <span title="2025-08-27: 0 solved">⬜</span> | <span title="2025-08-28: 0 solved">⬜</span> | <span title="2025-08-29: 0 solved">⬜</span> | <span title="2025-08-30: 0 solved">⬜</span> | <span title="2025-08-31: 0 solved">⬜</span>
+<span title="2025-08-25: 4 solved">🟥</span> | <span title="2025-08-26: 0 solved">⬜</span> | <span title="2025-08-27: 0 solved">⬜</span> | <span title="2025-08-28: 0 solved">⬜</span> | <span title="2025-08-29: 0 solved">⬜</span> | <span title="2025-08-30: 0 solved">⬜</span> | <span title="2025-08-31: 0 solved">⬜</span>
 
-Legend: ⬜ 0   🟩 1   🟨 2   🟧 3   🟥 4+
+Legend: ⬜ 0   🟩 1   🟨 2   🟧 3   🟥 4+ 
+ Hover to check the Date and number of problems solved each day
 
 ## 📞 Contact
 
